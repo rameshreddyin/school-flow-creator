@@ -1,10 +1,11 @@
 
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, BookOpen, Users, Calendar, CreditCard, School } from "lucide-react";
+import { CheckCircle2, BookOpen, Users, Calendar, CreditCard, School, ArrowRight } from "lucide-react";
 import { SchoolData } from "../OnboardingFlow";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
 
 interface CompletionProps {
   data: SchoolData;
@@ -16,6 +17,7 @@ interface CompletionProps {
 const Completion = ({ data }: CompletionProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const handleFinish = () => {
     setIsSubmitting(true);
@@ -39,7 +41,7 @@ const Completion = ({ data }: CompletionProps) => {
           School Setup Complete!
         </h2>
         <p className="text-gray-600 mt-3 max-w-md mx-auto">
-          Congratulations! You've successfully set up your school profile. Here's a summary of what you've configured:
+          Congratulations! You've successfully set up {data.schoolDetails.name || "your school"}. You're now ready to start using the school management system.
         </p>
       </div>
 
@@ -136,13 +138,14 @@ const Completion = ({ data }: CompletionProps) => {
         <Button
           onClick={handleFinish}
           disabled={isSubmitting}
-          className="w-full py-6 bg-black text-white hover:bg-gray-800 rounded-xl transition-all shadow-sm hover:shadow-md text-lg"
+          className="w-full py-6 bg-black text-white hover:bg-gray-800 rounded-xl transition-all shadow-sm hover:shadow-md text-lg flex items-center justify-center gap-2"
         >
-          {isSubmitting ? "Setting up your school..." : "Finish & Go to Dashboard"}
+          {isSubmitting ? "Setting up your school..." : "Go to Dashboard"}
+          {!isSubmitting && <ArrowRight className="h-5 w-5" />}
         </Button>
         
         <p className="text-sm text-gray-500 mt-4">
-          You can always make changes to these settings later from your school administration panel.
+          Welcome aboard, {user?.name}! You can always make changes to these settings later from your school administration panel.
         </p>
       </div>
     </div>

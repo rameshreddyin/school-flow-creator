@@ -8,10 +8,12 @@ import Schedule from "./steps/Schedule";
 import Subjects from "./steps/Subjects";
 import Completion from "./steps/Completion";
 import WelcomeScreen from "./steps/WelcomeScreen";
+import CreateStaffAccounts from "./steps/CreateStaffAccounts";
 import ProgressBar from "./ProgressBar";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Save } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/context/AuthContext";
 
 export type SchoolData = {
   schoolDetails: {
@@ -129,6 +131,7 @@ const steps = [
   { name: "Fee Structure", component: FeeStructure },
   { name: "Schedule", component: Schedule },
   { name: "Subjects", component: Subjects },
+  { name: "Staff Accounts", component: CreateStaffAccounts },
   { name: "Complete", component: Completion },
 ];
 
@@ -154,6 +157,8 @@ const variants = {
 const OnboardingFlow = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [direction, setDirection] = useState(0);
+  const { user } = useAuth();
+  
   const [schoolData, setSchoolData] = useState<SchoolData>(() => {
     // Try to load saved data from localStorage
     const savedData = localStorage.getItem('schoolOnboardingData');
@@ -174,7 +179,8 @@ const OnboardingFlow = () => {
     3: false,
     4: false,
     5: false,
-    6: true, // Completion is always valid
+    6: true, // Staff Accounts is always valid
+    7: true, // Completion is always valid
   });
 
   // Save data to localStorage whenever it changes
@@ -182,9 +188,21 @@ const OnboardingFlow = () => {
     localStorage.setItem('schoolOnboardingData', JSON.stringify(schoolData));
   }, [schoolData]);
 
+  // Pre-fill school details with admin info where applicable
+  useEffect(() => {
+    if (user && currentStep === 1 && !schoolData.schoolDetails.email) {
+      const updatedSchoolDetails = {
+        ...schoolData.schoolDetails,
+        email: user.email || schoolData.schoolDetails.email,
+      };
+      
+      handleUpdateData('schoolDetails', updatedSchoolDetails);
+    }
+  }, [currentStep, user]);
+
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
-      if (!stepValidity[currentStep as keyof typeof stepValidity] && currentStep !== 0 && currentStep !== steps.length - 1) {
+      if (!stepValidity[currentStep as keyof typeof stepValidity] && currentStep !== 0 && currentStep !== 6 && currentStep !== 7) {
         toast.error("Please complete all required fields before proceeding.");
         return;
       }
@@ -252,7 +270,7 @@ const OnboardingFlow = () => {
               if (actualStep < currentStep) {
                 setDirection(-1);
                 setCurrentStep(actualStep);
-              } else if (stepValidity[currentStep as keyof typeof stepValidity] || currentStep === 0 || currentStep === steps.length - 1) {
+              } else if (stepValidity[currentStep as keyof typeof stepValidity] || currentStep === 0 || currentStep === 6 || currentStep === 7) {
                 setDirection(1);
                 setCurrentStep(actualStep);
               } else {
