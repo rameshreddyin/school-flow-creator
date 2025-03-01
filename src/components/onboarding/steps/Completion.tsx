@@ -117,9 +117,9 @@ const Completion = ({ data }: CompletionProps) => {
             <h3 className="font-semibold">Subjects</h3>
           </div>
           <div className="text-sm">
-            <p className="text-gray-600 text-left">Total Subjects: <span className="text-gray-900">{data.subjects.length}</span></p>
+            <p className="text-gray-600 text-left">Total Subjects: <span className="text-gray-900">{Array.isArray(data.subjects) ? data.subjects.length : 0}</span></p>
             <div className="flex flex-wrap gap-1 mt-2 justify-center">
-              {data.subjects.map((subject, index) => (
+              {Array.isArray(data.subjects) && data.subjects.map((subject, index) => (
                 <span key={index} className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-200 text-gray-800 m-1">
                   {subject.name} ({subject.code})
                 </span>

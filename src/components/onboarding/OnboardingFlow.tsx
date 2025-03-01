@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import SchoolDetails from "./steps/SchoolDetails";
 import ClassStructure from "./steps/ClassStructure";
@@ -7,9 +7,10 @@ import FeeStructure from "./steps/FeeStructure";
 import Schedule from "./steps/Schedule";
 import Subjects from "./steps/Subjects";
 import Completion from "./steps/Completion";
+import WelcomeScreen from "./steps/WelcomeScreen";
 import ProgressBar from "./ProgressBar";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Save } from "lucide-react";
 import { toast } from "sonner";
 
 export type SchoolData = {
@@ -122,6 +123,7 @@ const defaultData: SchoolData = {
 };
 
 const steps = [
+  { name: "Welcome", component: WelcomeScreen },
   { name: "School Details", component: SchoolDetails },
   { name: "Class Structure", component: ClassStructure },
   { name: "Fee Structure", component: FeeStructure },
@@ -152,18 +154,37 @@ const variants = {
 const OnboardingFlow = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [direction, setDirection] = useState(0);
-  const [schoolData, setSchoolData] = useState<SchoolData>(defaultData);
+  const [schoolData, setSchoolData] = useState<SchoolData>(() => {
+    // Try to load saved data from localStorage
+    const savedData = localStorage.getItem('schoolOnboardingData');
+    if (savedData) {
+      try {
+        return JSON.parse(savedData) as SchoolData;
+      } catch (e) {
+        console.error("Failed to parse saved data:", e);
+      }
+    }
+    return defaultData;
+  });
+  
   const [stepValidity, setStepValidity] = useState({
-    0: false,
+    0: true, // Welcome is always valid
     1: false,
     2: false,
     3: false,
     4: false,
+    5: false,
+    6: true, // Completion is always valid
   });
+
+  // Save data to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('schoolOnboardingData', JSON.stringify(schoolData));
+  }, [schoolData]);
 
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
-      if (!stepValidity[currentStep as keyof typeof stepValidity] && currentStep !== steps.length - 1) {
+      if (!stepValidity[currentStep as keyof typeof stepValidity] && currentStep !== 0 && currentStep !== steps.length - 1) {
         toast.error("Please complete all required fields before proceeding.");
         return;
       }
@@ -196,7 +217,27 @@ const OnboardingFlow = () => {
     }));
   };
 
+  const handleSaveProgress = () => {
+    toast.success("Your progress has been saved! You can continue later.");
+  };
+
+  const handleWelcomeStart = () => {
+    setDirection(1);
+    setCurrentStep(1);
+  };
+
   const StepComponent = steps[currentStep].component;
+
+  // Special case for welcome screen
+  if (currentStep === 0) {
+    return (
+      <div className="w-full max-w-6xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
+        <div className="p-8 md:p-12 lg:p-16">
+          <WelcomeScreen onStart={handleWelcomeStart} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-6xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
@@ -204,15 +245,16 @@ const OnboardingFlow = () => {
         {/* Progress Indicator */}
         <div className="mb-12">
           <ProgressBar 
-            steps={steps} 
-            currentStep={currentStep} 
+            steps={steps.slice(1)} // Skip welcome step in progress bar
+            currentStep={currentStep - 1} // Adjust for welcome step
             onStepClick={(step) => {
-              if (step < currentStep) {
+              const actualStep = step + 1; // Adjust for welcome step
+              if (actualStep < currentStep) {
                 setDirection(-1);
-                setCurrentStep(step);
-              } else if (stepValidity[currentStep as keyof typeof stepValidity] || currentStep === steps.length - 1) {
+                setCurrentStep(actualStep);
+              } else if (stepValidity[currentStep as keyof typeof stepValidity] || currentStep === 0 || currentStep === steps.length - 1) {
                 setDirection(1);
-                setCurrentStep(step);
+                setCurrentStep(actualStep);
               } else {
                 toast.error("Please complete the current step before skipping ahead.");
               }
@@ -235,25 +277,42 @@ const OnboardingFlow = () => {
             }}
             className="min-h-[400px]"
           >
-            <StepComponent
-              data={schoolData}
-              updateData={handleUpdateData}
-              setValidity={(isValid: boolean) => handleUpdateValidity(currentStep, isValid)}
-            />
+            {currentStep === 0 ? (
+              <WelcomeScreen onStart={handleWelcomeStart} />
+            ) : (
+              <StepComponent
+                data={schoolData}
+                updateData={handleUpdateData}
+                setValidity={(isValid: boolean) => handleUpdateValidity(currentStep, isValid)}
+              />
+            )}
           </motion.div>
         </AnimatePresence>
 
         {/* Navigation Buttons */}
         <div className="flex justify-between mt-12 pt-8 border-t border-gray-100">
-          <Button
-            variant="outline"
-            onClick={handlePrevious}
-            disabled={currentStep === 0}
-            className="group flex items-center gap-2 px-6 py-3 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50"
-          >
-            <ChevronLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-            Back
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={handlePrevious}
+              disabled={currentStep <= 1} // Skip going back to welcome
+              className="group flex items-center gap-2 px-6 py-3 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50"
+            >
+              <ChevronLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+              Back
+            </Button>
+            
+            {currentStep > 1 && currentStep < steps.length - 1 && (
+              <Button
+                variant="outline"
+                onClick={handleSaveProgress}
+                className="flex items-center gap-2 px-6 py-3 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
+              >
+                <Save className="w-4 h-4" />
+                Save Progress
+              </Button>
+            )}
+          </div>
           
           <Button
             onClick={handleNext}
