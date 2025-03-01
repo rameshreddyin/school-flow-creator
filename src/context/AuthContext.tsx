@@ -47,7 +47,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // For demo purposes, we're accepting any password
         setUser(foundUser);
         localStorage.setItem("schoolUser", JSON.stringify(foundUser));
+        
+        // Check if onboarding is completed
+        const onboardingCompleted = localStorage.getItem('schoolOnboardingCompleted');
+        
         toast.success(`Welcome back, ${foundUser.name}!`);
+        
+        // Automatically navigate based on onboarding status
+        if (onboardingCompleted) {
+          navigate('/dashboard');
+        } else {
+          navigate('/onboarding');
+        }
+        
         return true;
       } else {
         toast.error("Invalid credentials. Please try again.");
@@ -74,6 +86,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // In a real app, this would create a new user in the database
       // Here we're just simulating the process
       await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // In a real app, this would trigger an email notification to the new staff member
+      console.log(`Created account for ${name} (${email}) with role ${role}`);
       
       toast.success(`Account for ${name} created successfully!`);
       return true;

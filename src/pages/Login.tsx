@@ -2,11 +2,16 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import { GraduationCap, Lock, Mail, Building } from "lucide-react";
+import { GraduationCap, Lock, Mail, Building, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { motion } from "framer-motion";
+import { 
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -24,8 +29,8 @@ const Login = () => {
       const success = await login(email, password, schoolCode);
       if (success) {
         // Check if the school has completed onboarding
-        const onboardingData = localStorage.getItem('schoolOnboardingData');
-        if (onboardingData) {
+        const onboardingCompleted = localStorage.getItem('schoolOnboardingCompleted');
+        if (onboardingCompleted) {
           navigate("/dashboard");
         } else {
           navigate("/onboarding");
@@ -33,6 +38,17 @@ const Login = () => {
       }
     } finally {
       setIsLoggingIn(false);
+    }
+  };
+
+  const setDemoCredentials = (userType: 'admin' | 'super_admin') => {
+    setSchoolCode("SCH001");
+    setPassword("password123");
+    
+    if (userType === 'admin') {
+      setEmail("admin@school.com");
+    } else {
+      setEmail("super@school.com");
     }
   };
 
@@ -73,16 +89,69 @@ const Login = () => {
           >
             Log in to access your school management system
           </motion.p>
+
+          {/* Demo account notice */}
+          <motion.div
+            className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 0.5 }}
+          >
+            <div className="flex items-start gap-2">
+              <Info className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="font-medium">Demo Accounts Available</p>
+                <p className="mt-1">For testing, you can use these accounts:</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="text-xs border-blue-300 hover:bg-blue-100"
+                    onClick={() => setDemoCredentials('admin')}
+                  >
+                    Use Admin Account
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="text-xs border-blue-300 hover:bg-blue-100"
+                    onClick={() => setDemoCredentials('super_admin')}
+                  >
+                    Use Super Admin Account
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </motion.div>
           
           <motion.form 
             onSubmit={handleLogin}
             className="space-y-6"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.5, duration: 0.5 }}
+            transition={{ delay: 0.6, duration: 0.5 }}
           >
             <div className="space-y-2">
-              <Label htmlFor="schoolCode">School Code</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="schoolCode">School Code</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="ghost" size="sm" className="h-5 p-0 text-gray-500 hover:text-gray-900 text-xs">
+                      <Info className="h-3 w-3 mr-1" />
+                      What's this?
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-80">
+                    <div className="text-sm">
+                      <h4 className="font-medium mb-1">School Code</h4>
+                      <p className="text-gray-600 text-xs">
+                        Every school in our system has a unique code for security.
+                        Use "SCH001" for this demo.
+                      </p>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
               <div className="relative">
                 <Building className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
                 <Input
@@ -94,9 +163,6 @@ const Login = () => {
                   required
                 />
               </div>
-              <p className="text-xs text-gray-500">
-                Demo code: SCH001
-              </p>
             </div>
             
             <div className="space-y-2">
@@ -113,9 +179,6 @@ const Login = () => {
                   required
                 />
               </div>
-              <p className="text-xs text-gray-500">
-                Demo email: admin@school.com or super@school.com
-              </p>
             </div>
             
             <div className="space-y-2">

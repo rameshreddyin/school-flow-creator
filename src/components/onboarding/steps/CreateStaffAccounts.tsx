@@ -4,11 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, UserCheck, Users, Trash2 } from "lucide-react";
+import { Plus, UserCheck, Users, Trash2, ShieldCheck, ShieldAlert } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 import { UserRole } from "@/types/auth";
+import { availableModules, getAccessibleModules } from "@/lib/auth";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Separator } from "@/components/ui/separator";
 
 interface StaffMember {
   id: string;
@@ -24,8 +27,27 @@ interface CreateStaffAccountsProps {
   onStart?: () => void; // Add this to match other step props
 }
 
+const roleDescriptions: Record<UserRole, { description: string, icon: any }> = {
+  super_admin: {
+    description: "Full access to all modules and system settings. Can manage other admins.",
+    icon: ShieldAlert
+  },
+  admin: {
+    description: "Access to most modules and can manage school settings.",
+    icon: ShieldCheck
+  },
+  teacher: {
+    description: "Access to student information, classes, and teaching resources.",
+    icon: UserCheck
+  },
+  staff: {
+    description: "Limited access to basic school functions and reports.",
+    icon: Users
+  }
+};
+
 const CreateStaffAccounts = ({ setValidity }: CreateStaffAccountsProps) => {
-  const { createStaffAccount } = useAuth();
+  const { createStaffAccount, user } = useAuth();
   const [staffMembers, setStaffMembers] = useState<StaffMember[]>([]);
   const [isCreating, setIsCreating] = useState(false);
   const [newStaff, setNewStaff] = useState<StaffMember>({
@@ -35,6 +57,7 @@ const CreateStaffAccounts = ({ setValidity }: CreateStaffAccountsProps) => {
     role: "admin"
   });
   const [createdAccounts, setCreatedAccounts] = useState<StaffMember[]>([]);
+  const [showRoleHelp, setShowRoleHelp] = useState(false);
 
   // Always set validity to true for this step
   useState(() => {
@@ -92,13 +115,18 @@ const CreateStaffAccounts = ({ setValidity }: CreateStaffAccountsProps) => {
       }
 
       if (createdStaff.length > 0) {
-        setCreatedAccounts(createdStaff);
+        setCreatedAccounts([...createdAccounts, ...createdStaff]);
         setStaffMembers([]);
         toast.success(`Successfully created ${createdStaff.length} staff accounts`);
       }
     } finally {
       setIsCreating(false);
     }
+  };
+
+  // Show modules accessible by role
+  const getModulesByRole = (role: UserRole) => {
+    return getAccessibleModules(role);
   };
 
   return (
@@ -143,7 +171,18 @@ const CreateStaffAccounts = ({ setValidity }: CreateStaffAccountsProps) => {
             </div>
             
             <div>
-              <Label htmlFor="staffRole">Role</Label>
+              <div className="flex justify-between items-center mb-1">
+                <Label htmlFor="staffRole">Role</Label>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-xs text-gray-500"
+                  onClick={() => setShowRoleHelp(!showRoleHelp)}
+                >
+                  {showRoleHelp ? "Hide Info" : "What's this?"}
+                </Button>
+              </div>
+              
               <Select 
                 value={newStaff.role} 
                 onValueChange={(value) => setNewStaff({...newStaff, role: value as UserRole})}
@@ -152,11 +191,45 @@ const CreateStaffAccounts = ({ setValidity }: CreateStaffAccountsProps) => {
                   <SelectValue placeholder="Select role" />
                 </SelectTrigger>
                 <SelectContent>
+                  {user?.role === "super_admin" && (
+                    <SelectItem value="super_admin">Super Admin</SelectItem>
+                  )}
                   <SelectItem value="admin">Admin</SelectItem>
                   <SelectItem value="teacher">Teacher</SelectItem>
                   <SelectItem value="staff">Staff</SelectItem>
                 </SelectContent>
               </Select>
+              
+              {showRoleHelp && (
+                <div className="mt-3 p-3 bg-gray-100 rounded-lg text-sm">
+                  <h4 className="font-medium text-gray-900 mb-2">Role Access Levels</h4>
+                  {Object.entries(roleDescriptions).map(([role, { description, icon: Icon }]) => (
+                    <div key={role} className="mb-2 flex gap-2">
+                      <Icon className="h-4 w-4 mt-0.5 flex-shrink-0 text-gray-700" />
+                      <div>
+                        <span className="font-medium capitalize">{role.replace('_', ' ')}: </span>
+                        <span className="text-gray-600">{description}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            <div className="mt-2">
+              <h4 className="text-sm font-medium mb-2">Module Access Preview</h4>
+              <div className="bg-white p-3 rounded-lg border border-gray-200 max-h-28 overflow-y-auto">
+                <div className="flex flex-wrap gap-1">
+                  {getModulesByRole(newStaff.role).map((module) => (
+                    <span 
+                      key={module.id} 
+                      className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-200 text-gray-800"
+                    >
+                      {module.name}
+                    </span>
+                  ))}
+                </div>
+              </div>
             </div>
             
             <Button 
@@ -208,7 +281,7 @@ const CreateStaffAccounts = ({ setValidity }: CreateStaffAccountsProps) => {
                     </div>
                     <div>
                       <h4 className="font-medium">{staff.name}</h4>
-                      <p className="text-sm text-gray-600">{staff.email} · {staff.role}</p>
+                      <p className="text-sm text-gray-600">{staff.email} · <span className="capitalize">{staff.role.replace('_', ' ')}</span></p>
                     </div>
                   </div>
                   <Button 
@@ -243,7 +316,7 @@ const CreateStaffAccounts = ({ setValidity }: CreateStaffAccountsProps) => {
                     </div>
                     <div>
                       <h4 className="font-medium">{staff.name}</h4>
-                      <p className="text-sm text-gray-600">{staff.email} · {staff.role}</p>
+                      <p className="text-sm text-gray-600">{staff.email} · <span className="capitalize">{staff.role.replace('_', ' ')}</span></p>
                     </div>
                   </div>
                 ))}
@@ -251,6 +324,40 @@ const CreateStaffAccounts = ({ setValidity }: CreateStaffAccountsProps) => {
             </div>
           )}
         </motion.div>
+      </div>
+      
+      {/* Module Access Section */}
+      <div className="mt-10 bg-white p-6 rounded-xl border border-gray-200">
+        <h3 className="font-bold text-xl mb-4">Role-Based Module Access</h3>
+        <p className="text-gray-600 mb-6">
+          Each role has access to different modules in the system. Here's a breakdown of what each role can access:
+        </p>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {Object.entries(roleDescriptions).map(([role, { description, icon: Icon }]) => (
+            <div key={role} className="border border-gray-200 rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Icon className="h-5 w-5 text-gray-800" />
+                <h4 className="font-bold capitalize">{role.replace('_', ' ')}</h4>
+              </div>
+              <p className="text-sm text-gray-600 mb-3">{description}</p>
+              
+              <Separator className="my-3" />
+              
+              <h5 className="text-sm font-medium mb-2">Module Access:</h5>
+              <div className="flex flex-wrap gap-1">
+                {getModulesByRole(role as UserRole).map((module) => (
+                  <span 
+                    key={module.id} 
+                    className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-200 text-gray-800 mb-1"
+                  >
+                    {module.name}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
       
       <div className="mt-8 text-center">

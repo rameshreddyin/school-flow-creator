@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, BookOpen, Users, Calendar, CreditCard, School, ArrowRight } from "lucide-react";
+import { CheckCircle2, BookOpen, Users, Calendar, CreditCard, School, ArrowRight, UserPlus } from "lucide-react";
 import { SchoolData } from "../OnboardingFlow";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -24,6 +24,7 @@ const Completion = ({ data }: CompletionProps) => {
     
     // Simulate API call
     setTimeout(() => {
+      localStorage.setItem('schoolOnboardingCompleted', 'true');
       toast.success("Your school has been successfully set up!");
       setTimeout(() => {
         navigate('/dashboard');
@@ -131,6 +132,29 @@ const Completion = ({ data }: CompletionProps) => {
               ))}
             </div>
           </div>
+        </div>
+      </div>
+
+      <div className="bg-gray-50 p-6 rounded-xl border border-gray-200 max-w-3xl mx-auto mb-8">
+        <div className="flex items-center mb-4">
+          <UserPlus className="h-5 w-5 mr-2 text-black" />
+          <h3 className="font-semibold">User Accounts & Access Management</h3>
+        </div>
+        <div className="text-sm text-left">
+          <p className="text-gray-600 mb-2">
+            As an administrator, you can:
+          </p>
+          <ul className="list-disc list-inside space-y-1 text-gray-600 mb-3">
+            <li>Create accounts for teachers and staff members</li>
+            <li>Manage module access based on user roles</li>
+            <li>Update permissions and add new users at any time</li>
+          </ul>
+          <p className="text-gray-600 mb-2">
+            <strong>Role-based access:</strong> Each role (Super Admin, Admin, Teacher, Staff) has specific access to different modules.
+          </p>
+          <p className="bg-yellow-50 p-2 rounded text-yellow-800 text-xs">
+            <strong>Note:</strong> You've already created staff accounts in the previous step. You can create more accounts from the dashboard after setup.
+          </p>
         </div>
       </div>
 
