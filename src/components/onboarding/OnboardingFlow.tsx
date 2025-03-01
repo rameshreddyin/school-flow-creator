@@ -284,6 +284,8 @@ const OnboardingFlow = () => {
                 data={schoolData}
                 updateData={handleUpdateData}
                 setValidity={(isValid: boolean) => handleUpdateValidity(currentStep, isValid)}
+                // Passing onStart for WelcomeScreen to avoid the TypeScript error
+                onStart={handleWelcomeStart}
               />
             )}
           </motion.div>

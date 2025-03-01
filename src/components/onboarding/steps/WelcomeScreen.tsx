@@ -3,8 +3,11 @@ import { GraduationCap, School, Users, BookOpen, ArrowRight } from "lucide-react
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 
-interface WelcomeScreenProps {
+export interface WelcomeScreenProps {
   onStart: () => void;
+  data?: any; // Add optional data prop
+  updateData?: any; // Add optional updateData prop
+  setValidity?: any; // Add optional setValidity prop
 }
 
 const WelcomeScreen = ({ onStart }: WelcomeScreenProps) => {
@@ -52,15 +55,33 @@ const WelcomeScreen = ({ onStart }: WelcomeScreenProps) => {
     <div className="w-full max-w-4xl mx-auto text-center py-8">
       <div className="mb-12">
         <div className="flex justify-center mb-6">
-          <div className="w-20 h-20 bg-black rounded-full flex items-center justify-center">
+          <motion.div 
+            className="w-20 h-20 bg-black rounded-full flex items-center justify-center"
+            initial={{ scale: 0.5, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: "spring", stiffness: 200, damping: 15 }}
+          >
             <GraduationCap className="w-10 h-10 text-white" />
-          </div>
+          </motion.div>
         </div>
         
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your School Management System</h1>
-        <p className="text-gray-600 max-w-2xl mx-auto text-lg">
+        <motion.h1 
+          className="text-4xl font-bold mb-4"
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.2, duration: 0.5 }}
+        >
+          Welcome to Your School Management System
+        </motion.h1>
+        
+        <motion.p 
+          className="text-gray-600 max-w-2xl mx-auto text-lg"
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
+        >
           Let's set up your school's profile in just a few simple steps. This onboarding process will help you configure the essential aspects of your school management system.
-        </p>
+        </motion.p>
       </div>
 
       <motion.div 
@@ -74,6 +95,7 @@ const WelcomeScreen = ({ onStart }: WelcomeScreenProps) => {
             key={index} 
             className="bg-gray-50 rounded-xl p-6 text-left border border-gray-200 hover:shadow-md transition-shadow"
             variants={itemVariants}
+            whileHover={{ y: -5, transition: { duration: 0.2 } }}
           >
             <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center mb-4">
               <div className="text-white">{feature.icon}</div>
@@ -85,17 +107,28 @@ const WelcomeScreen = ({ onStart }: WelcomeScreenProps) => {
       </motion.div>
 
       <div className="flex flex-col items-center">
-        <p className="text-gray-500 mb-6">
-          This process will take about 5-10 minutes to complete. You can save and continue later at any point.
-        </p>
-        
-        <Button 
-          onClick={onStart} 
-          className="group bg-black text-white hover:bg-gray-800 px-8 py-6 rounded-xl text-lg font-medium flex items-center gap-2 transition-all hover:gap-3"
+        <motion.p 
+          className="text-gray-500 mb-6"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.7, duration: 0.5 }}
         >
-          Start School Setup
-          <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
-        </Button>
+          This process will take about 5-10 minutes to complete. You can save and continue later at any point.
+        </motion.p>
+        
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.8, duration: 0.5 }}
+        >
+          <Button 
+            onClick={onStart} 
+            className="group bg-black text-white hover:bg-gray-800 px-8 py-6 rounded-xl text-lg font-medium flex items-center gap-2 transition-all hover:gap-3 shadow-sm hover:shadow-md"
+          >
+            Start School Setup
+            <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+          </Button>
+        </motion.div>
       </div>
     </div>
   );

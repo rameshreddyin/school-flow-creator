@@ -4,26 +4,29 @@ import { CheckCircle2, BookOpen, Users, Calendar, CreditCard, School } from "luc
 import { SchoolData } from "../OnboardingFlow";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 interface CompletionProps {
   data: SchoolData;
   updateData: (section: keyof SchoolData, data: any) => void;
   setValidity: (isValid: boolean) => void;
+  onStart?: () => void; // Add this to match WelcomeScreenProps pattern
 }
 
 const Completion = ({ data }: CompletionProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
 
   const handleFinish = () => {
     setIsSubmitting(true);
     
     // Simulate API call
     setTimeout(() => {
-      toast.success("Your school has been successfully set up! Redirecting to dashboard...");
+      toast.success("Your school has been successfully set up!");
       setTimeout(() => {
-        window.location.href = "/dashboard";
-      }, 2000);
-    }, 1500);
+        navigate('/dashboard');
+      }, 1000);
+    }, 1000);
   };
 
   return (
