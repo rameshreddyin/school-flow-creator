@@ -11,6 +11,9 @@ import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Onboarding from "./pages/Onboarding";
 import Dashboard from "./pages/Dashboard";
+import Leads from "./pages/Leads";
+import Students from "./pages/Students";
+import Staff from "./pages/Staff";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -46,10 +49,28 @@ const App = () => (
             
             {/* Module Routes */}
             <Route 
+              path="/leads" 
+              element={
+                <ProtectedRoute allowedRoles={["super_admin", "admin"]}>
+                  <Leads />
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route 
               path="/students" 
               element={
                 <ProtectedRoute allowedRoles={["super_admin", "admin", "teacher"]}>
-                  <div className="p-8">Students Module (Coming Soon)</div>
+                  <Students />
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route 
+              path="/staff" 
+              element={
+                <ProtectedRoute allowedRoles={["super_admin", "admin"]}>
+                  <Staff />
                 </ProtectedRoute>
               } 
             />
