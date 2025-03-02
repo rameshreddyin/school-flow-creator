@@ -17,8 +17,8 @@ const ProtectedRoute = ({ children, allowedRoles = [] }: ProtectedRouteProps) =>
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-pulse flex flex-col items-center">
-          <div className="h-12 w-12 bg-gray-200 rounded-full mb-4"></div>
-          <div className="h-4 w-40 bg-gray-200 rounded"></div>
+          <div className="h-12 w-12 bg-purple-200 rounded-full mb-4"></div>
+          <div className="h-4 w-40 bg-purple-100 rounded"></div>
         </div>
       </div>
     );

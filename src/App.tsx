@@ -44,6 +44,70 @@ const App = () => (
               } 
             />
             
+            {/* Module Routes */}
+            <Route 
+              path="/students" 
+              element={
+                <ProtectedRoute allowedRoles={["super_admin", "admin", "teacher"]}>
+                  <div className="p-8">Students Module (Coming Soon)</div>
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route 
+              path="/classes" 
+              element={
+                <ProtectedRoute allowedRoles={["super_admin", "admin", "teacher"]}>
+                  <div className="p-8">Classes Module (Coming Soon)</div>
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route 
+              path="/subjects" 
+              element={
+                <ProtectedRoute allowedRoles={["super_admin", "admin", "teacher"]}>
+                  <div className="p-8">Subjects Module (Coming Soon)</div>
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route 
+              path="/fees" 
+              element={
+                <ProtectedRoute allowedRoles={["super_admin", "admin"]}>
+                  <div className="p-8">Fees Module (Coming Soon)</div>
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route 
+              path="/schedule" 
+              element={
+                <ProtectedRoute allowedRoles={["super_admin", "admin", "teacher", "staff"]}>
+                  <div className="p-8">Schedule Module (Coming Soon)</div>
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route 
+              path="/communication" 
+              element={
+                <ProtectedRoute allowedRoles={["super_admin", "admin"]}>
+                  <div className="p-8">Communication Module (Coming Soon)</div>
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route 
+              path="/settings" 
+              element={
+                <ProtectedRoute allowedRoles={["super_admin", "admin"]}>
+                  <div className="p-8">Settings Module (Coming Soon)</div>
+                </ProtectedRoute>
+              } 
+            />
+            
             {/* Redirect any unknown paths to 404 */}
             <Route path="*" element={<NotFound />} />
           </Routes>
